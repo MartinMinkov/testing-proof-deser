@@ -43,7 +43,6 @@ console.log('verification key', verificationKey.data.slice(0, 10) + '..');
 
 console.log('proving base case...');
 let proof = await MyProgram.baseCase(Field(0));
-proof = testJsonRoundtrip(MyProof, proof);
 
 // type sanity check
 proof satisfies Proof<Field, void>;
@@ -58,25 +57,11 @@ console.log('ok (alternative)?', ok);
 
 const N = 1000;
 
+console.log('starting proof loop...');
 for (let i = 1; i < N; i++) {
-  console.log('proving step ', i);
-  proof = await MyProgram.inductiveCase(Field(i), proof);
-  proof = testJsonRoundtrip(MyProof, proof);
-  ok = await verify(proof, verificationKey);
-  console.log('ok?', ok);
-}
-
-function testJsonRoundtrip<
-  P extends Proof<any, any>,
-  MyProof extends { fromJSON(jsonProof: JsonProof): P }
->(MyProof: MyProof, proof: P) {
-  let jsonProof = proof.toJSON();
-  console.log(
-    'json proof',
-    JSON.stringify({
-      ...jsonProof,
-      proof: jsonProof.proof.slice(0, 10) + '..',
-    })
-  );
-  return MyProof.fromJSON(jsonProof);
+  const newProof = await MyProgram.inductiveCase(Field(i), proof);
+  let json_proof = newProof.toJSON();
+  let from_json_proof = MyProof.fromJSON(json_proof);
+  ok = await verify(from_json_proof, verificationKey);
+  proof = newProof;
 }

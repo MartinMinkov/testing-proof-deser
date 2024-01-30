@@ -1,0 +1,1 @@
+node --inspect-brk --trace-gc --enable-source-maps build/src/index.js $@
