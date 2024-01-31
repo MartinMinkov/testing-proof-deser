@@ -1,4 +1,16 @@
-import { SelfProof, Field, ZkProgram, verify, Proof, Provable } from 'o1js';
+import {
+  SelfProof,
+  Field,
+  ZkProgram,
+  verify,
+  Proof,
+  Provable,
+  Bytes,
+  Hash,
+  Poseidon,
+} from 'o1js';
+
+class Bytes32 extends Bytes(32) {}
 
 let MyProgram = ZkProgram({
   name: 'example-with-input',
@@ -17,6 +29,14 @@ let MyProgram = ZkProgram({
       method(input: Field, earlierProof: SelfProof<Field, void>) {
         earlierProof.verify();
         earlierProof.publicInput.add(1).assertEquals(input);
+
+        for (let i = 0; i < 232; i++) {
+          const bytes = Bytes32.fromHex('646f67');
+          const h = Poseidon.hash(bytes.toFields());
+          let h1 = Hash.SHA3_256.hash(bytes);
+          let h2 = Hash.SHA3_384.hash(bytes);
+          h.assertEquals(h);
+        }
       },
     },
   },
@@ -30,8 +50,9 @@ let MyProof = ZkProgram.Proof(MyProgram);
 console.log('program digest', MyProgram.digest());
 
 console.log('compiling MyProgram...');
-let { verificationKey } = await MyProgram.compile();
+let { verificationKey } = await MyProgram.compile({ forceRecompile: true });
 console.log('verification key', verificationKey.data.slice(0, 10) + '..');
+console.log('MyProgram: ', MyProgram.analyzeMethods());
 
 console.log('proving base case...');
 let proof = await MyProgram.baseCase(Field(0));
