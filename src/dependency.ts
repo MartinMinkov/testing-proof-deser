@@ -123,40 +123,38 @@ console.log('verification key', verificationKeyD.data.slice(0, 10) + '..');
 
 console.log('proving base case...');
 let proof = await ProgramA.baseCase(Field(0));
-
 console.log('verify...');
 let ok = await verify(proof.toJSON(), verificationKeyA);
 console.log('ok?', ok);
 
-// console.log('proving inductive case...');
-// proof = await ProgramB.inductiveCase(Field(1), proof);
+const N = 1000;
 
-// console.log('verify...');
-// ok = await verify(proof.toJSON(), verificationKey);
-// console.log('ok?', ok);
+console.log('starting proof loop...');
+for (let i = 1; i < N; i++) {
+  console.log('proof run #', i);
+  console.log('proving inductive case...');
 
-// console.log('proving inductive case...');
-// proof = await ProgramC.inductiveCase(Field(1), proof);
+  let proofA = await ProgramA.inductiveCase(Field(i), proof);
+  console.log('verify...');
+  ok = await verify(proofA.toJSON(), verificationKeyA);
+  console.log('ok?', ok);
+  proof = proofA;
 
-// console.log('verify...');
-// ok = await verify(proof.toJSON(), verificationKey);
+  console.log('proving inductive case...');
+  let proofB = await ProgramB.inductiveCase(Field(i + 1), proofA);
+  console.log('verify...');
+  ok = await verify(proofB.toJSON(), verificationKeyB);
+  console.log('ok?', ok);
 
-// console.log('ok?', ok);
+  console.log('proving inductive case...');
+  let proofC = await ProgramC.inductiveCase(Field(i + 2), proofB);
+  console.log('verify...');
+  ok = await verify(proofC.toJSON(), verificationKeyC);
+  console.log('ok?', ok);
 
-// console.log('proving inductive case...');
-// proof = await ProgramD.inductiveCase(Field(1), proof);
-
-// console.log('verify...');
-// ok = await verify(proof.toJSON(), verificationKey);
-
-// const N = 1000;
-
-// console.log('starting proof loop...');
-// for (let i = 1; i < N; i++) {
-//   console.log('proof run #', i);
-//   const newProof = await ProgramD.inductiveCase(Field(i), proof);
-//   let json_proof = newProof.toJSON();
-//   let from_json_proof = ProgramDProof.fromJSON(json_proof);
-//   ok = await verify(from_json_proof, verificationKey);
-//   proof = newProof;
-// }
+  console.log('proving inductive case...');
+  let proofD = await ProgramD.inductiveCase(Field(i + 3), proofC);
+  console.log('verify...');
+  ok = await verify(proofD.toJSON(), verificationKeyD);
+  console.log('ok?', ok);
+}
