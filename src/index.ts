@@ -1,12 +1,4 @@
-import {
-  SelfProof,
-  Field,
-  ZkProgram,
-  verify,
-  Proof,
-  JsonProof,
-  Provable,
-} from 'o1js';
+import { SelfProof, Field, ZkProgram, verify, Proof, Provable } from 'o1js';
 
 let MyProgram = ZkProgram({
   name: 'example-with-input',
@@ -59,6 +51,7 @@ const N = 1000;
 
 console.log('starting proof loop...');
 for (let i = 1; i < N; i++) {
+  console.log('proof run #', i);
   const newProof = await MyProgram.inductiveCase(Field(i), proof);
   let json_proof = newProof.toJSON();
   let from_json_proof = MyProof.fromJSON(json_proof);
